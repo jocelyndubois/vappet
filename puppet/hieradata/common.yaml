@@ -110,8 +110,8 @@ mysql:
                 - ALL
             name: jdubois_gomonitor
             host: localhost
-            user: jdubois
-            password: 7ECAtufr
+            user: user
+            password: password
             sql_file: 'C:/vappet/environment/base.sql'
 beanstalkd:
     install: 0
