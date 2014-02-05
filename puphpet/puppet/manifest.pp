@@ -9,9 +9,7 @@ if $server_values == undef {
 include '::ntp'
 
 Exec { path => [ '/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/' ] }
-File { owner => 0, group => 0, mode => 0644 }
-
-group { 'puppet': ensure => present }
+group { 'puppet':   ensure => present }
 group { 'www-data': ensure => present }
 
 user { $::ssh_username:
@@ -35,8 +33,11 @@ file { "/home/${::ssh_username}":
 # copy dot files to ssh user's home directory
 exec { 'dotfiles':
   cwd     => "/home/${::ssh_username}",
-  command => "cp -r /vagrant/files/dot/.[a-zA-Z0-9]* /home/${::ssh_username}/ && chown -R ${::ssh_username} /home/${::ssh_username}/.[a-zA-Z0-9]*",
-  onlyif  => "test -d /vagrant/files/dot",
+  command => "cp -r /vagrant/puphpet/files/dot/.[a-zA-Z0-9]* /home/${::ssh_username}/ \
+              && chown -R ${::ssh_username} /home/${::ssh_username}/.[a-zA-Z0-9]* \
+              && cp -r /vagrant/puphpet/files/dot/.[a-zA-Z0-9]* /root/",
+  onlyif  => 'test -d /vagrant/puphpet/files/dot',
+  returns => [0, 1],
   require => User[$::ssh_username]
 }
 
@@ -61,16 +62,24 @@ case $::osfamily {
 
     Class['::yum'] -> Yum::Managed_yumrepo <| |> -> Package <| |>
 
-    package { 'git-latest':
-      name    => 'git',
-      ensure  => 'latest',
-      require => Class['yum::repo::repoforgeextras']
+    if defined(Package['git']) == false {
+      package { 'git':
+        ensure  => latest,
+        require => Class['yum::repo::repoforgeextras']
+      }
     }
 
     exec { 'bash_git':
       cwd     => "/home/${::ssh_username}",
       command => "curl https://raw.github.com/git/git/master/contrib/completion/git-prompt.sh > /home/${::ssh_username}/.bash_git",
       creates => "/home/${::ssh_username}/.bash_git"
+    }
+
+    exec { 'bash_git for root':
+      cwd     => '/root',
+      command => "cp /home/${::ssh_username}/.bash_git /root/.bash_git",
+      creates => '/root/.bash_git',
+      require => Exec['bash_git']
     }
 
     file_line { 'link ~/.bash_git':
@@ -83,13 +92,28 @@ case $::osfamily {
       ]
     }
 
+    file_line { 'link ~/.bash_git for root':
+      ensure  => present,
+      line    => 'if [ -f ~/.bash_git ] ; then source ~/.bash_git; fi',
+      path    => '/root/.bashrc',
+      require => [
+        Exec['dotfiles'],
+        Exec['bash_git'],
+      ]
+    }
+
     file_line { 'link ~/.bash_aliases':
       ensure  => present,
       line    => 'if [ -f ~/.bash_aliases ] ; then source ~/.bash_aliases; fi',
       path    => "/home/${::ssh_username}/.bash_profile",
-      require => [
-        File_line['link ~/.bash_git'],
-      ]
+      require => File_line['link ~/.bash_git']
+    }
+
+    file_line { 'link ~/.bash_aliases for root':
+      ensure  => present,
+      line    => 'if [ -f ~/.bash_aliases ] ; then source ~/.bash_aliases; fi',
+      path    => '/root/.bashrc',
+      require => File_line['link ~/.bash_git for root']
     }
 
     ensure_packages( ['augeas'] )
@@ -125,8 +149,12 @@ case $::operatingsystem {
     }
   }
   'ubuntu': {
-    apt::key { '4F4EA0AAE5267A6C': }
-    apt::key { '4CBEDD5A': }
+    apt::key { '4F4EA0AAE5267A6C':
+      key_server => 'hkp://keyserver.ubuntu.com:80'
+    }
+    apt::key { '4CBEDD5A':
+      key_server => 'hkp://keyserver.ubuntu.com:80'
+    }
 
     apt::ppa { 'ppa:pdoes/ppa': require => Apt::Key['4CBEDD5A'] }
 
@@ -178,10 +206,74 @@ define add_dotdeb ($release){
   }
 }
 
+## Begin MailCatcher manifest
+
+if $mailcatcher_values == undef {
+  $mailcatcher_values = hiera('mailcatcher', false)
+}
+
+if $mailcatcher_values['install'] != undef and $mailcatcher_values['install'] == 1 {
+  $mailcatcher_path       = $mailcatcher_values['settings']['path']
+  $mailcatcher_smtp_ip    = $mailcatcher_values['settings']['smtp_ip']
+  $mailcatcher_smtp_port  = $mailcatcher_values['settings']['smtp_port']
+  $mailcatcher_http_ip    = $mailcatcher_values['settings']['http_ip']
+  $mailcatcher_http_port  = $mailcatcher_values['settings']['http_port']
+  $mailcatcher_log        = $mailcatcher_values['settings']['log']
+
+  class { 'mailcatcher':
+    mailcatcher_path => $mailcatcher_path,
+    smtp_ip          => $mailcatcher_smtp_ip,
+    smtp_port        => $mailcatcher_smtp_port,
+    http_ip          => $mailcatcher_http_ip,
+    http_port        => $mailcatcher_http_port,
+  }
+
+  if $::osfamily == 'redhat' and ! defined(Iptables::Allow["tcp/${mailcatcher_smtp_port}"]) {
+    iptables::allow { "tcp/${mailcatcher_smtp_port}":
+      port     => $mailcatcher_smtp_port,
+      protocol => 'tcp'
+    }
+  }
+
+  if $::osfamily == 'redhat' and ! defined(Iptables::Allow["tcp/${mailcatcher_http_port}"]) {
+    iptables::allow { "tcp/${mailcatcher_http_port}":
+      port     => $mailcatcher_http_port,
+      protocol => 'tcp'
+    }
+  }
+
+  if ! defined(Class['supervisord']) {
+    class { 'supervisord':
+      install_pip => true,
+    }
+  }
+
+  $supervisord_mailcatcher_options = sort(join_keys_to_values({
+    ' --smtp-ip'   => $mailcatcher_smtp_ip,
+    ' --smtp-port' => $mailcatcher_smtp_port,
+    ' --http-ip'   => $mailcatcher_http_ip,
+    ' --http-port' => $mailcatcher_http_port
+  }, ' '))
+
+  $supervisord_mailcatcher_cmd = "mailcatcher ${supervisord_mailcatcher_options} -f  >> ${mailcatcher_log}"
+
+  supervisord::program { 'mailcatcher':
+    command     => $supervisord_mailcatcher_cmd,
+    priority    => '100',
+    user        => 'mailcatcher',
+    autostart   => true,
+    autorestart => true,
+    environment => {
+      'PATH' => "/bin:/sbin:/usr/bin:/usr/sbin:${mailcatcher_path}"
+    },
+    require => Package['mailcatcher']
+  }
+}
+
 ## Begin Apache manifest
 
 if $yaml_values == undef {
-  $yaml_values = loadyaml('/vagrant/puppet/hieradata/common.yaml')
+  $yaml_values = loadyaml('/vagrant/puphpet/config.yaml')
 }
 
 if $apache_values == undef {
@@ -194,7 +286,7 @@ $webroot_location = $puphpet::params::apache_webroot_location
 
 exec { "exec mkdir -p ${webroot_location}":
   command => "mkdir -p ${webroot_location}",
-  onlyif  => "test -d ${webroot_location}",
+  creates => $webroot_location,
 }
 
 if ! defined(File[$webroot_location]) {
@@ -237,6 +329,22 @@ if has_key($apache_values, 'mod_pagespeed') and $apache_values['mod_pagespeed'] 
 
 if has_key($apache_values, 'mod_spdy') and $apache_values['mod_spdy'] == 1 {
   class { 'puphpet::apache::modspdy': }
+}
+
+if count($apache_values['vhosts']) > 0 {
+  each( $apache_values['vhosts'] ) |$key, $vhost| {
+    exec { "exec mkdir -p ${vhost['docroot']} @ key ${key}":
+      command => "mkdir -p ${vhost['docroot']}",
+      creates => $vhost['docroot'],
+    }
+
+    if ! defined(File[$vhost['docroot']]) {
+      file { $vhost['docroot']:
+        ensure  => directory,
+        require => Exec["exec mkdir -p ${vhost['docroot']} @ key ${key}"]
+      }
+    }
+  }
 }
 
 create_resources(apache::vhost, $apache_values['vhosts'])
@@ -539,7 +647,7 @@ define mysql_db (
 if has_key($mysql_values, 'phpmyadmin') and $mysql_values['phpmyadmin'] == 1 and is_hash($php_values) {
   if $::osfamily == 'debian' {
     if $::operatingsystem == 'ubuntu' {
-      apt::key { '80E7349A06ED541C': }
+      apt::key { '80E7349A06ED541C': key_server => 'hkp://keyserver.ubuntu.com:80' }
       apt::ppa { 'ppa:nijel/phpmyadmin': require => Apt::Key['80E7349A06ED541C'] }
     }
 
@@ -568,20 +676,13 @@ if has_key($mysql_values, 'phpmyadmin') and $mysql_values['phpmyadmin'] == 1 and
     }
   }
 
-  exec { 'move phpmyadmin to webroot':
-    command => "mv /usr/share/${phpMyAdmin_folder} ${mysql_pma_webroot_location}/phpmyadmin",
+  exec { 'cp phpmyadmin to webroot':
+    command => "cp -LR /usr/share/${phpMyAdmin_folder} ${mysql_pma_webroot_location}/phpmyadmin",
     onlyif  => "test ! -d ${mysql_pma_webroot_location}/phpmyadmin",
     require => [
       Package[$phpMyAdmin_package],
       File[$mysql_pma_webroot_location]
     ]
-  }
-
-  file { "/usr/share/${phpMyAdmin_folder}":
-    target  => "${mysql_pma_webroot_location}/phpmyadmin",
-    ensure  => link,
-    replace => 'no',
-    require => Exec['move phpmyadmin to webroot']
   }
 }
 
@@ -621,13 +722,137 @@ define mysql_nginx_default_conf (
   }
 }
 
+## Begin MongoDb manifest
+
+if $mongodb_values == undef {
+  $mongodb_values = hiera('mongodb', false)
+}
+
+if $php_values == undef {
+  $php_values = hiera('php', false)
+}
+
+if $apache_values == undef {
+  $apache_values = hiera('apache', false)
+}
+
+if $nginx_values == undef {
+  $nginx_values = hiera('nginx', false)
+}
+
+if is_hash($apache_values) or is_hash($nginx_values) {
+  $mongodb_webserver_restart = true
+} else {
+  $mongodb_webserver_restart = false
+}
+
+if has_key($mongodb_values, 'install') and $mongodb_values['install'] == 1 {
+  case $::osfamily {
+    'debian': {
+      class {'::mongodb::globals':
+        manage_package_repo => true,
+      }->
+      class {'::mongodb::server':
+        auth => $mongodb_values['auth'],
+        port => $mongodb_values['port'],
+      }
+
+      $mongodb_pecl = 'mongo'
+    }
+    'redhat': {
+      class {'::mongodb::globals':
+        manage_package_repo => true,
+      }->
+      class {'::mongodb::server':
+        auth => $mongodb_values['auth'],
+        port => $mongodb_values['port'],
+      }->
+      class {'::mongodb::client': }
+
+      $mongodb_pecl = 'pecl-mongo'
+    }
+  }
+
+  if is_hash($mongodb_values['databases']) and count($mongodb_values['databases']) > 0 {
+    create_resources(mongodb_db, $mongodb_values['databases'])
+  }
+}
+
+define mongodb_db (
+  $user,
+  $password
+) {
+  if $name == '' or $password == '' {
+    fail( 'MongoDB requires that name and password be set. Please check your settings!' )
+  }
+
+  mongodb::db { $name:
+    user     => $user,
+    password => $password
+  }
+}
+
 # Begin beanstalkd
 
 if $beanstalkd_values == undef {
   $beanstalkd_values = hiera('beanstalkd', false)
 }
 
+if $php_values == undef {
+  $php_values = hiera('php', false)
+}
+
+if $apache_values == undef {
+  $apache_values = hiera('apache', false)
+}
+
+if $nginx_values == undef {
+  $nginx_values = hiera('nginx', false)
+}
+
+if is_hash($apache_values) {
+  $beanstalk_console_webroot_location = "${puphpet::params::apache_webroot_location}/beanstalk_console"
+} elsif is_hash($nginx_values) {
+  $beanstalk_console_webroot_location = "${puphpet::params::nginx_webroot_location}/beanstalk_console"
+} else {
+  $beanstalk_console_webroot_location = undef
+}
+
 if has_key($beanstalkd_values, 'install') and $beanstalkd_values['install'] == 1 {
-  beanstalkd::config { $beanstalkd_values: }
+  create_resources(beanstalkd::config, {'beanstalkd' => $beanstalkd_values['settings']})
+
+  if has_key($beanstalkd_values, 'beanstalk_console') and $beanstalkd_values['beanstalk_console'] == 1 and $beanstalk_console_webroot_location != undef and is_hash($php_values) {
+    exec { 'delete-beanstalk_console-path-if-not-git-repo':
+      command => "rm -rf ${beanstalk_console_webroot_location}",
+      onlyif  => "test ! -d ${beanstalk_console_webroot_location}/.git"
+    }
+
+    vcsrepo { $beanstalk_console_webroot_location:
+      ensure   => present,
+      provider => git,
+      source   => 'https://github.com/ptrofimov/beanstalk_console.git',
+      require  => Exec['delete-beanstalk_console-path-if-not-git-repo']
+    }
+  }
+}
+
+# Begin rabbitmq
+
+if $rabbitmq_values == undef {
+  $rabbitmq_values = hiera('rabbitmq', false)
+}
+
+if $php_values == undef {
+  $php_values = hiera('php', false)
+}
+
+if has_key($rabbitmq_values, 'install') and $rabbitmq_values['install'] == 1 {
+  class { 'rabbitmq':
+    port => $rabbitmq_values['port']
+  }
+
+  if is_hash($php_values) and ! defined(Php::Pecl::Module['amqp']) {
+    php_pecl_mod { 'amqp': }
+  }
 }
 
