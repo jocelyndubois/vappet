@@ -1,0 +1,195 @@
+---
+vagrantfile-local:
+    vm:
+        box: ubuntu-precise12042-x64-vbox43
+        box_url: 'http://box.puphpet.com/ubuntu-precise12042-x64-vbox43.box'
+        hostname: null
+        network:
+            private_network: 192.168.56.101
+            forwarded_port:
+                CzVSzxWNWQ27:
+                    host: '5758'
+                    guest: '22'
+        provider:
+            virtualbox:
+                modifyvm:
+                    natdnshostresolver1: on
+                    memory: '1024'
+                setextradata:
+                    VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root: 1
+        provision:
+            puppet:
+                manifests_path: puphpet/puppet
+                manifest_file: manifest.pp
+                options:
+                    - '--verbose'
+                    - '--hiera_config /vagrant/puphpet/puppet/hiera.yaml'
+                    - '--parser future'
+        synced_folder:
+            Ek3YhgQU6xhZ:
+                id: vagrant-root
+                source: www/
+                target: /var/www
+                nfs: 'false'
+        usable_port_range: 2200..2250
+    ssh:
+        host: null
+        port: null
+        private_key_path: null
+        username: vagrant
+        guest_port: null
+        keep_alive: true
+        forward_agent: false
+        forward_x11: false
+        shell: 'bash -l'
+    vagrant:
+        host: detect
+server:
+    packages:
+        - vim
+    dot_files:
+        -
+            bash_aliases: null
+    _prevent_empty: ''
+mailcatcher:
+    install: 0
+    settings:
+        smtp_ip: 0.0.0.0
+        smtp_port: 1025
+        http_ip: 0.0.0.0
+        http_port: '1080'
+        path: /usr/local/bin
+        log: /var/log/mailcatcher/mailcatcher.log
+apache:
+    modules:
+        - php
+        - rewrite
+    vhosts:
+        GUaCRDvECWe2:
+            servername: cbarragan.farmstar-conseil.fr
+            serveraliases:
+                - desktop-local.farmstar-conseil.fr
+            docroot: /var/www/SpotImage-Farmstar/trunk/web
+            port: '80'
+            setenv:
+                - 'SYMFONY_ENV cbarragan'
+            override:
+                - None
+            directoryindex: app_cbarragan.php
+        0zjbUvA5ybEk:
+            servername: cbarragan-local.farmstar-conseil.fr
+            serveraliases:
+                - mobile-local.farmstar-conseil.fr
+            docroot: /var/www/SpotImage-Farmstar/trunk/web
+            port: '80'
+            setenv:
+                - 'SYMFONY_ENV cbarragan_mobile'
+            override:
+                - None
+            directoryindex: app_cbarragan_mobile.php
+        GUaCRDvECWe2:
+            servername: jdubois.farmstar-conseil.fr
+            serveraliases:
+                - jdubois.farmstar-conseil.fr
+            docroot: /var/www/SpotImage-Farmstar/trunk/web
+            port: '80'
+            setenv:
+                - 'SYMFONY_ENV jdubois'
+            override:
+                - None
+            directoryindex: app_jdubois.php
+        0zjbUvA5ybEk:
+            servername: jdubois-mobile.farmstar-conseil.fr
+            serveraliases:
+                - jdubois-mobile.farmstar-conseil.fr
+            docroot: /var/www/SpotImage-Farmstar/trunk/web
+            port: '80'
+            setenv:
+                - 'SYMFONY_ENV jdubois_mobile'
+            override:
+                - None
+            directoryindex: app_jdubois_mobile.php
+        GUaCRDvECWe2:
+            servername: shordeaux.farmstar-conseil.fr
+            serveraliases:
+                - shordeaux.farmstar-conseil.fr
+            docroot: /var/www/SpotImage-Farmstar/trunk/web
+            port: '80'
+            setenv:
+                - 'SYMFONY_ENV shordeaux'
+            override:
+                - None
+            directoryindex: app_shordeaux.php
+        0zjbUvA5ybEk:
+            servername: shordeaux-mobile.farmstar-conseil.fr
+            serveraliases:
+                - shordeaux-mobile.farmstar-conseil.fr
+            docroot: /var/www/SpotImage-Farmstar/trunk/web
+            port: '80'
+            setenv:
+                - 'SYMFONY_ENV shordeaux_mobile'
+            override:
+                - None
+            directoryindex: app_shordeaux_mobile.php                        
+    user: www-data
+    group: www-data
+    default_vhost: true
+    mpm_module: prefork
+    mod_pagespeed: 0
+    mod_spdy: 0
+php:
+    version: '54'
+    composer: '1'
+    modules:
+        php:
+            - cli
+            - intl
+            - mcrypt
+        pear: {  }
+        pecl:
+            - pecl_http
+            - mongo
+    ini:
+        display_errors: On
+        error_reporting: '-1'
+        session.save_path: /var/lib/php/session
+        extension: mongo.so
+    timezone: Europe/Paris
+xdebug:
+    install: '1'
+    settings:
+        xdebug.default_enable: '1'
+        xdebug.remote_autostart: '0'
+        xdebug.remote_connect_back: '1'
+        xdebug.remote_enable: '1'
+        xdebug.remote_handler: dbgp
+        xdebug.remote_port: '9000'
+drush:
+    install: 0
+    settings:
+        drush.tag_branch: 6.x
+mysql:
+    root_password: '123'
+    phpmyadmin: '1'
+    adminer: 0
+    databases: {  }
+mongodb:
+    install: '1'
+    auth: 1
+    port: '27017'
+    databases: {  }
+beanstalkd:
+    install: 0
+    settings:
+        listenaddress: 0.0.0.0
+        listenport: '13000'
+        maxjobsize: '65535'
+        maxconnections: '1024'
+        binlogdir: /var/lib/beanstalkd/binlog
+        binlogfsync: null
+        binlogsize: '10485760'
+    beanstalk_console: 0
+    binlogdir: /var/lib/beanstalkd/binlog
+rabbitmq:
+    install: 0
+    port: '5672'
