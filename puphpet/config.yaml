@@ -88,7 +88,7 @@ apache:
                 - None
             directoryindex: app_cbarragan_mobile.php
         GUaCRDvECWe2:
-            servername: jdubois.farmstar-conseil.com
+            servername: jdubois.farmstar-conseil.fr
             serveraliases:
                 - jdubois.farmstar-conseil.fr
             docroot: /var/www/SpotImage-Farmstar/trunk/web
@@ -99,7 +99,7 @@ apache:
                 - None
             directoryindex: app_jdubois.php
         0zjbUvA5ybEk:
-            servername: mobile.jdubois.farmstar-conseil.com
+            servername: jdubois-mobile.farmstar-conseil.fr
             serveraliases:
                 - jdubois-mobile.farmstar-conseil.fr
             docroot: /var/www/SpotImage-Farmstar/trunk/web
