@@ -14,7 +14,7 @@ vagrantfile-local:
             virtualbox:
                 modifyvm:
                     natdnshostresolver1: on
-                    memory: '1024'
+                    memory: '4096'
                 setextradata:
                     VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root: 1
         provision:
@@ -131,8 +131,8 @@ apache:
             override:
                 - None
             directoryindex: app_shordeaux_mobile.php                        
-    user: www-data
-    group: www-data
+    user: vagrant
+    group: vagrant
     default_vhost: true
     mpm_module: prefork
     mod_pagespeed: 0
