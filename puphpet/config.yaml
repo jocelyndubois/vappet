@@ -149,7 +149,7 @@ php:
         pecl:
             - pecl_http
             - mongo
-            - pecl_apc
+            - APC
     ini:
         display_errors: On
         error_reporting: '-1'
