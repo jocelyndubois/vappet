@@ -156,9 +156,9 @@ php:
         extension: mongo.so
     timezone: Europe/Paris
 xdebug:
-    install: '1'
+    install: '0'
     settings:
-        xdebug.default_enable: '1'
+        xdebug.default_enable: '0'
         xdebug.remote_autostart: '0'
         xdebug.remote_connect_back: '1'
         xdebug.remote_enable: '1'
