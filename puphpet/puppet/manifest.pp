@@ -8,6 +8,12 @@ if $server_values == undef {
 # failing for invalid certificates
 include '::ntp'
 
+file {'/etc/php5/conf.d/apc.ini':
+  ensure => present,
+  owner => vagrant, group => vagrant, mode => 444,
+  content => "extension=apc.so \napc.enabled=1 \n",
+}
+
 Exec { path => [ '/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/' ] }
 group { 'puppet':   ensure => present }
 group { 'www-data': ensure => present }
