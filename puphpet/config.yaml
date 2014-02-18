@@ -76,7 +76,7 @@ apache:
             setenv:
                 - 'SYMFONY_ENV cbarragan'
             override:
-                - None
+                - All
             directoryindex: app_cbarragan.php
         0zjbUvA5ybEk:
             servername: cbarragan-local.farmstar-conseil.fr
@@ -87,9 +87,9 @@ apache:
             setenv:
                 - 'SYMFONY_ENV cbarragan_mobile'
             override:
-                - None
+                - All
             directoryindex: app_cbarragan_mobile.php
-        GUaCRDvECWe2:
+        gov60rGMAPKP:
             servername: jdubois.farmstar-conseil.fr
             serveraliases:
                 - jdubois.farmstar-conseil.fr
@@ -98,9 +98,9 @@ apache:
             setenv:
                 - 'SYMFONY_ENV jdubois'
             override:
-                - None
+                - All
             directoryindex: app_jdubois.php
-        0zjbUvA5ybEk:
+        b3iqsp078OUt:
             servername: jdubois-mobile.farmstar-conseil.fr
             serveraliases:
                 - jdubois-mobile.farmstar-conseil.fr
@@ -109,9 +109,9 @@ apache:
             setenv:
                 - 'SYMFONY_ENV jdubois_mobile'
             override:
-                - None
+                - All
             directoryindex: app_jdubois_mobile.php
-        GUaCRDvECWe2:
+        DTqisNMa8GnH:
             servername: shordeaux.farmstar-conseil.fr
             serveraliases:
                 - shordeaux.farmstar-conseil.fr
@@ -120,9 +120,9 @@ apache:
             setenv:
                 - 'SYMFONY_ENV shordeaux'
             override:
-                - None
+                - All
             directoryindex: app_shordeaux.php
-        0zjbUvA5ybEk:
+        wYcFGCQQE7ph:
             servername: shordeaux-mobile.farmstar-conseil.fr
             serveraliases:
                 - shordeaux-mobile.farmstar-conseil.fr
@@ -131,8 +131,8 @@ apache:
             setenv:
                 - 'SYMFONY_ENV shordeaux_mobile'
             override:
-                - None
-            directoryindex: app_shordeaux_mobile.php                        
+                - All
+            directoryindex: app_shordeaux_mobile.php
     user: vagrant
     group: vagrant
     default_vhost: true
