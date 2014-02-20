@@ -316,18 +316,7 @@ class { 'apache':
   manage_group  => false
 }
 
-if $::osfamily == 'debian' {
-  case $apache_values['mpm_module'] {
-    'prefork': { ensure_packages( ['apache2-mpm-prefork'] ) }
-    'worker':  { ensure_packages( ['apache2-mpm-worker'] ) }
-    'event':   { ensure_packages( ['apache2-mpm-event'] ) }
-  }
-} elsif $::osfamily == 'redhat' and ! defined(Iptables::Allow['tcp/80']) {
-  iptables::allow { 'tcp/80':
-    port     => '80',
-    protocol => 'tcp'
-  }
-}
+
 
 if has_key($apache_values, 'mod_pagespeed') and $apache_values['mod_pagespeed'] == 1 {
   class { 'puphpet::apache::modpagespeed': }
