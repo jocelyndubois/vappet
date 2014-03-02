@@ -44,6 +44,11 @@ vagrantfile-local:
         shell: 'bash -l'
     vagrant:
         host: detect
+mongodb:
+    install: 0
+    auth: 1
+    port: '27017'
+    databases: {  }
 server:
     packages:
         - vim
@@ -78,8 +83,15 @@ apache:
             override:
                 - All
             directoryindex: index.php
-    user: www-data
-    group: www-data
+        shordeauxCommercy:
+            servername: shordeaux.commercy-robotique.fr
+            docroot: /var/www/www.commercy-robotique.fr/web
+            port: 80
+            override:
+                - All
+            directoryindex: index.php
+    user: vagrant 
+    group: vagrant
     default_vhost: true
     mpm_module: prefork
     mod_pagespeed: 0
@@ -117,6 +129,7 @@ drush:
     settings:
         drush.tag_branch: 6.x
 mysql:
+    install: 1
     root_password: '123'
     phpmyadmin: '1'
     adminer: 0
