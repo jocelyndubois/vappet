@@ -862,3 +862,20 @@ if has_key($rabbitmq_values, 'install') and $rabbitmq_values['install'] == 1 {
   }
 }
 
+## SSH
+file { '/home/vagrant/.ssh/id_rsa':
+          ensure => present,
+          source => "/vagrant/puphpet/files/ssh/id_rsa",
+}
+
+file { '/home/vagrant/.ssh/id_rsa.pub':
+          ensure => present,
+          source => "/vagrant/puphpet/files/ssh/id_rsa.pub",
+}
+
+## IMAGEMAGICK
+package { "imagemagick":
+    ensure => "installed"
+}
+
+
