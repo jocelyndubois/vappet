@@ -8,8 +8,8 @@ vagrantfile-local:
             private_network: 192.168.56.101
             forwarded_port:
                 CzVSzxWNWQ27:
-                    host: '5758'
-                    guest: '22'
+                    host: '5759'
+                    guest: '23'
         provider:
             virtualbox:
                 modifyvm:
@@ -90,6 +90,13 @@ apache:
             override:
                 - All
             directoryindex: index.php
+        dalta:
+            servername: local.extranet.dalta-sa.com
+            docroot: /var/www/extranet.dalta-sa.com/web
+            port: 80
+            override:
+                - All
+            directoryindex: frontend_dev.php            
     user: vagrant 
     group: vagrant
     default_vhost: true
@@ -104,6 +111,7 @@ php:
             - cli
             - intl
             - mcrypt
+            - imagick
         pear: {  }
         pecl:
             - pecl_http
