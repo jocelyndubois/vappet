@@ -95,10 +95,10 @@ apache:
             docroot: /var/www/extranet.dalta-sa.com/web
             port: 80
             override:
-                - All
+                - None
             directoryindex: frontend_dev.php            
     user: vagrant 
-    group: vagrant
+    group: www-data
     default_vhost: true
     mpm_module: prefork
     mod_pagespeed: 0
@@ -118,6 +118,9 @@ php:
             - mongo
             - APC
     ini:
+        memory_limit: "110M"
+        post_max_size: "100M"
+        upload_max_filesize: "80M"
         display_errors: On
         error_reporting: '-1'
         session.save_path: /var/lib/php/session
