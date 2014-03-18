@@ -5,11 +5,11 @@ vagrantfile-local:
         box_url: 'http://box.puphpet.com/ubuntu-precise12042-x64-vbox43.box'
         hostname: null
         network:
-            private_network: 192.168.56.101
+            private_network: 192.168.56.103
             forwarded_port:
-                CzVSzxWNWQ27:
-                    host: '5759'
-                    guest: '23'
+                sRngnuZiyKQd:
+                    host: '5758'
+                    guest: '22'
         provider:
             virtualbox:
                 modifyvm:
@@ -26,7 +26,7 @@ vagrantfile-local:
                     - '--hiera_config /vagrant/puphpet/puppet/hiera.yaml'
                     - '--parser future'
         synced_folder:
-            Ek3YhgQU6xhZ:
+            t7TDOKgyKMWc:
                 id: vagrant-root
                 source: www/
                 target: /var/www
@@ -44,11 +44,6 @@ vagrantfile-local:
         shell: 'bash -l'
     vagrant:
         host: detect
-mongodb:
-    install: 0
-    auth: 1
-    port: '27017'
-    databases: {  }
 server:
     packages:
         - vim
@@ -65,69 +60,69 @@ mailcatcher:
         smtp_port: 1025
         http_ip: 0.0.0.0
         http_port: '1080'
-        path: /usr/local/bin
-        log: /var/log/mailcatcher/mailcatcher.log
+        mailcatcher_path: /usr/local/bin
+        log_path: /var/log/mailcatcher/mailcatcher.log
 apache:
+    install: '1'
+    settings:
+        user: www-data
+        group: www-data
+        default_vhost: true
+        manage_user: false
+        manage_group: false
+        sendfile: 0
     modules:
         - php
         - rewrite
     vhosts:
-        gomonitor-backend:
-            servername: b-gomonitor.fr
+        pg-b-gomonitor:
+            servername: pg-b-gomonitor.fr
             serveraliases:
-                - b-gomonitor.fr
+                - pg-b-gomonitor.fr
             docroot: /var/www/SpotImage-Gomonitor/trunk/backend/web
             port: '80'
             setenv:
                 - 'SYMFONY_ENV jdubois'
             override:
                 - All
-            directoryindex: index.php
-        shordeauxCommercy:
-            servername: shordeaux.commercy-robotique.fr
-            docroot: /var/www/www.commercy-robotique.fr/web
-            port: 80
+            custom_fragment: ''
+        pg-f-gomonitor:
+            servername: pg-f-gomonitor.fr
+            serveraliases:
+                - pg-f-gomonitor.fr
+            docroot: /var/www/SpotImage-Gomonitor/trunk/frontend/web
+            port: '80'
+            setenv:
+                - 'SYMFONY_ENV jdubois'
             override:
                 - All
-            directoryindex: index.php
-        dalta:
-            servername: local.extranet.dalta-sa.com
-            docroot: /var/www/extranet.dalta-sa.com/web
-            port: 80
-            override:
-                - None
-            directoryindex: frontend_dev.php            
-    user: vagrant 
-    group: www-data
-    default_vhost: true
-    mpm_module: prefork
+            custom_fragment: ''
     mod_pagespeed: 0
     mod_spdy: 0
 php:
-    version: '54'
+    install: '1'
+    version: '55'
     composer: '1'
     modules:
         php:
             - cli
+            - imagick
             - intl
             - mcrypt
-            - imagick
         pear: {  }
         pecl:
-            - pecl_http
-            - mongo
             - APC
+            - mongo
+            - pecl_http
+            - imagick
     ini:
-        memory_limit: "110M"
-        post_max_size: "100M"
-        upload_max_filesize: "80M"
         display_errors: On
         error_reporting: '-1'
         session.save_path: /var/lib/php/session
         extension: mongo.so
     timezone: Europe/Paris
 xdebug:
-    install: '0'
+    install: '1'
     settings:
         xdebug.default_enable: '0'
         xdebug.remote_autostart: '0'
@@ -140,11 +135,37 @@ drush:
     settings:
         drush.tag_branch: 6.x
 mysql:
-    install: 1
+    install: '1'
     root_password: '123'
     phpmyadmin: '1'
     adminer: 0
     databases: {  }
+postgresql:
+    install: '1'
+    settings:
+        root_password: '123'
+        user_group: postgres
+        encoding: UTF8
+        version: '9.3'
+    databases: {  }
+    adminer: '1'
+mariadb:
+    install: 0
+    root_password: '123'
+    phpmyadmin: 0
+    adminer: 0
+    databases: {  }
+    version: '10.0'
+mongodb:
+    install: '1'
+    settings:
+        auth: 1
+        port: '27017'
+    databases: {  }
+redis:
+    install: 0
+    settings:
+        conf_port: '6379'
 beanstalkd:
     install: 0
     settings:
@@ -158,5 +179,12 @@ beanstalkd:
     beanstalk_console: 0
     binlogdir: /var/lib/beanstalkd/binlog
 rabbitmq:
-    install: 0
-    port: '5672'
+    install: '1'
+    settings:
+        port: '5672'
+elastic_search:
+    install: '1'
+    settings:
+        java_install: true
+        autoupgrade: true
+
