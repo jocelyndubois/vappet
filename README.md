@@ -7,10 +7,10 @@ Etape 1 - Installations
 Téléchargez et installez les softwares suivants :
 
 1. Vagrant : 
-	- http://www.vagrantup.com/downloads.html
+    - http://www.vagrantup.com/downloads.html
 2. VirtualBox
-	- https://www.virtualbox.org/wiki/Downloads
-	
+    - https://www.virtualbox.org/wiki/Downloads
+    
 Etape 2 - Créer l’environement
 ---------------------
 
@@ -21,9 +21,12 @@ Etape 3 - Cloner le repo git.
 
 Lancez la commande suivante : 
 
-	 git clone git@github.com:jocelyndubois/vappet.git
+     git clone git@github.com:jocelyndubois/vappet.git
 
 Ceci va télécharger tous les fichiers de config.
+Aller sur la branche pgsql :
+
+     git checkout -t origin/pgsql
 
 Etape 4 - Personnalisation
 ---------------------
@@ -36,19 +39,19 @@ A savoir configurer mysql et votre BDD ainsi que votre dossier partagé.
 
 Allez dans le fichier Vagrantfile à la racine du projet.
 
- Ligne 8, remplacez C:/ par le dossier local de votre application.
+ Par défaut le dossier partagé sur la machine hôte est /var/www
 
 ### Etape 4b - SQL
 
-Allez dans le fichier puppet/hieradata/common.yaml
+Allez dans le fichier puphpet/config.yaml
 
-Vous pouvez dans la partie mysql personnaliser un utilisateur, ajouter par défaut une BDD et utiliser un fichier SQL pour la peupler.
+Vous pouvez dans la partie pgsql personnaliser un utilisateur, ajouter par défaut une BDD et utiliser un fichier SQL pour la peupler.
 
 Etape 5 - Lancer la machine
 ---------------------
 
 Lancez la commande : 
-	- vagrant up
+    - vagrant up
 Ceci a pour effet de télécharger, lancer et configurer la machine virtuelle.
 
 Etape 6 - Programmez !
@@ -57,9 +60,10 @@ Etape 6 - Programmez !
 Pour accéder à la machine virtuelle, tapez “vagrant ssh”. 
 
 Votre serveur virtuel est pret et accessible à : 
-http://192.168.56.101/
-Et mysql à : 
-http://192.168.56.101/phpmyadmin
+http://192.168.56.103/
+Et pgsql à : 
+http://192.168.56.103/adminer
+(se connecter pour la première fois avec l'utilisateur postgres sans mot de passe et créer ou modifier l'utilisateur pour pouvoir vous reconnecter avec)
 
 
 Explications
@@ -92,7 +96,6 @@ User : user
 mdp : password
 base : database
 ```
-
 
 
 
