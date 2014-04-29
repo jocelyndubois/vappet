@@ -63,8 +63,9 @@ Votre serveur virtuel est pret et accessible à :
 http://192.168.56.103/
 Et pgsql à : 
 http://192.168.56.103/adminer
-(se connecter pour la première fois avec l'utilisateur postgres sans mot de passe et créer ou modifier l'utilisateur pour pouvoir vous reconnecter avec)
-
+dans "Serveur" entrez localhost
+dans "Utilisateur" entrez postgres
+dans "Mot de passe" entrez 123
 
 Explications
 =============
