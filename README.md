@@ -99,6 +99,7 @@ PgSql
 
 De base les infos sont les suivants :
 ```
+serveur: localhost
 Login : postgres
 Mdp : 123
 ```
