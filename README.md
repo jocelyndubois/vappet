@@ -92,11 +92,15 @@ MySql
 De base les infos sont les suivants :
 ```
 Login : root
-Mdp : root
-User : user
-mdp : password
-base : database
+Mdp : 123
 ```
+PgSql
+---------------------
 
+De base les infos sont les suivants :
+```
+Login : postgres
+Mdp : 123
+```
 
 
