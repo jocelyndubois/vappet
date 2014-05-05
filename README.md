@@ -91,16 +91,15 @@ Créer l'utilisateur qui va s'occuper de la réplication
 
      psql -c "CREATE USER rep REPLICATION LOGIN CONNECTION LIMIT 1 ENCRYPTED PASSWORD '123';"
 
-Editer:
+Ajouter ces lignes dans pg_hba.conf:
 
      vim /etc/postgresql/9.3/main/pg_hba.conf
 
-Ajouter:
 > host    replication     rep     192.168.56.104/32  trust
 
-     vim /etc/postgresql/9.3/main/postgresql.conf
+Ajouter ces lignes dans postgresql.conf:
 
-Ajouter:
+     vim /etc/postgresql/9.3/main/postgresql.conf
 
 > listen_addresses = '*'
 > wal_level = 'hot_standby'
