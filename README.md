@@ -91,6 +91,7 @@ Créer l'utilisateur qui va s'occuper de la réplication
 
      psql -c "CREATE USER rep REPLICATION LOGIN CONNECTION LIMIT 1 ENCRYPTED PASSWORD '123';"
 
+Editer:
 
      vim /etc/postgresql/9.3/main/pg_hba.conf
 
