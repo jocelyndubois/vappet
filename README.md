@@ -88,6 +88,7 @@ CONFIGURER MASTER
      ssh-copy-id 192.168.56.104
 
 Créer l'utilisateur qui va s'occuper de la réplication
+
      psql -c "CREATE USER rep REPLICATION LOGIN CONNECTION LIMIT 1 ENCRYPTED PASSWORD '123';"
 
 
