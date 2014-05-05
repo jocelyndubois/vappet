@@ -2,8 +2,9 @@
 
 if $server_values == undef {
   $server_values = hiera('server', false)
+} if $vm_values == undef {
+  $vm_values = hiera($::vm_target_key, false)
 }
-
 # Ensure the time is accurate, reducing the possibilities of apt repositories
 # failing for invalid certificates
 class { 'ntp': }
@@ -213,6 +214,27 @@ define add_dotdeb ($release){
     key               => '89DF5277',
     key_server        => 'keys.gnupg.net',
     include_src       => true
+  }
+}
+
+# Begin open ports for Iptables
+if $::osfamily == 'redhat'
+  and has_key($vm_values, 'vm')
+  and has_key($vm_values['vm'], 'network')
+  and has_key($vm_values['vm']['network'], 'forwarded_port')
+{
+  create_resources( iptables_port, $vm_values['vm']['network']['forwarded_port'] )
+}
+
+define iptables_port (
+  $host,
+  $guest,
+) {
+  if ( ! defined(Iptables::Allow["tcp/${guest}"]) ) {
+    iptables::allow { "tcp/${guest}":
+      port     => $guest,
+      protocol => 'tcp'
+    }
   }
 }
 
@@ -849,11 +871,28 @@ if $mysql_values == undef {
   $nginx_values = hiera('nginx', false)
 }
 
+include 'mysql::params'
+
 if hash_key_equals($mysql_values, 'install', 1) {
   if hash_key_equals($apache_values, 'install', 1) or hash_key_equals($nginx_values, 'install', 1) {
     $mysql_webserver_restart = true
   } else {
     $mysql_webserver_restart = false
+  }
+
+  if $::osfamily == 'redhat' {
+    exec { 'mysql-community-repo':
+      command => 'yum -y --nogpgcheck install "http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm" && touch /.puphpet-stuff/mysql-community-release',
+      creates => '/.puphpet-stuff/mysql-community-release'
+    }
+
+    $mysql_server_require             = Exec['mysql-community-repo']
+    $mysql_server_server_package_name = 'mysql-community-server'
+    $mysql_server_client_package_name = 'mysql-community-client'
+  } else {
+    $mysql_server_require             = []
+    $mysql_server_server_package_name = $mysql::params::server_package_name
+    $mysql_server_client_package_name = $mysql::params::client_package_name
   }
 
   if hash_key_equals($php_values, 'install', 1) {
@@ -868,7 +907,14 @@ if hash_key_equals($mysql_values, 'install', 1) {
 
   if $mysql_values['root_password'] {
     class { 'mysql::server':
+      package_name  => $mysql_server_server_package_name,
       root_password => $mysql_values['root_password'],
+      require       => $mysql_server_require
+    }
+
+    class { 'mysql::client':
+      package_name => $mysql_server_client_package_name,
+      require      => $mysql_server_require
     }
 
     if is_hash($mysql_values['databases']) and count($mysql_values['databases']) > 0 {
@@ -1238,7 +1284,7 @@ if hash_key_equals($mongodb_values, 'install', 1) {
   Class['Mongodb::Globals'] -> Class['Mongodb::Server']
 
   class { 'mongodb::globals':
-    manage_package_repo => true
+    manage_package_repo => true,
   }
 
   create_resources('class', { 'mongodb::server' => $mongodb_values['settings'] })
@@ -1251,11 +1297,23 @@ if hash_key_equals($mongodb_values, 'install', 1) {
       class { '::mongodb::client':
         require => Class['::Mongodb::Server']
       }
+
+      $mongodb_pecl = 'pecl-mongo'
     }
   }
 
   if is_hash($mongodb_values['databases']) and count($mongodb_values['databases']) > 0 {
     create_resources(mongodb_db, $mongodb_values['databases'])
+  }
+
+  if hash_key_equals($php_values, 'install', 1)
+    and ! defined(Php::Pecl::Module[$mongodb_pecl])
+  {
+    php::pecl::module { $mongodb_pecl:
+      use_package         => false,
+      service_autorestart => $mongodb_webserver_restart,
+      require             => Class['mongodb::server']
+    }
   }
 }
 

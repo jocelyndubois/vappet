@@ -1,14 +1,14 @@
 ---
 vagrantfile-local:
     vm:
-        box: vappet_pgsql
+        box: vappet_pgsql-slave
         box_url: 'http://box.puphpet.com/ubuntu-precise12042-x64-vbox43.box'
         hostname: null
         network:
-            private_network: 192.168.56.103
+            private_network: 192.168.56.104
             forwarded_port:
-                os30nZxsbqCN:
-                    host: '5758'
+                ZAAOzuKXZayx:
+                    host: '5759'
                     guest: '22'
         provider:
             virtualbox:
@@ -26,7 +26,7 @@ vagrantfile-local:
                     - '--hiera_config /vagrant/puphpet/puppet/hiera.yaml'
                     - '--parser future'
         synced_folder:
-            kxHwjf9rauDD:
+            noWfkJ3gT0zQ:
                 source: /var/www
                 target: /var/www
                 nfs: 'true'
@@ -79,7 +79,7 @@ apache:
 nginx:
     install: 0
     vhosts:
-        Avjpt1rbxjzd:
+        KQLwds6jxsFy:
             server_name: awesome.dev
             server_aliases:
                 - www.awesome.dev
@@ -104,7 +104,6 @@ php:
         pear: {  }
         pecl:
             - APC
-            - mongo-1.5.0
             - pecl_http
             - imagick
     ini:
@@ -127,7 +126,7 @@ drush:
     settings:
         drush.tag_branch: 6.x
 mysql:
-    install: '1'
+    install: 0
     root_password: '123'
     phpmyadmin: '1'
     adminer: 0
@@ -139,7 +138,13 @@ postgresql:
         user_group: postgres
         encoding: UTF8
         version: '9.3'
-    databases: {  }
+    databases: {}
+#        cah0Uci7uzoX:
+#            grant: ALL
+#            name: farmstar
+#            user: pg_slave
+#            password: farmstar
+#            sql_file: ''
     adminer: '1'
 mariadb:
     install: 0
@@ -149,7 +154,7 @@ mariadb:
     databases: {  }
     version: '10.0'
 mongodb:
-    install: '1'
+    install: 0
     settings:
         auth: 1
         port: '27017'
