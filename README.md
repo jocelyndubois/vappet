@@ -6,11 +6,11 @@ Etape 1 - Installations
 
 Téléchargez et installez les softwares suivants :
 
-1. Vagrant : 
+1. Vagrant :
     - http://www.vagrantup.com/downloads.html
 2. VirtualBox
     - https://www.virtualbox.org/wiki/Downloads
-    
+
 Etape 2 - Créer l’environement
 ---------------------
 
@@ -19,14 +19,14 @@ Créez simplement un dossier sur la machine host et se placer dedans. Ce sera ic
 Etape 3 - Cloner le repo git.
 ---------------------
 
-Lancez la commande suivante : 
+Lancez la commande suivante :
 
      git clone git@github.com:jocelyndubois/vappet.git
 
 Ceci va télécharger tous les fichiers de config.
 Aller sur la branche pgsql :
 
-     git checkout -t origin/pgsql
+     git checkout -t origin/pgsql_slave
 
 Etape 4 - Personnalisation
 ---------------------
@@ -50,23 +50,107 @@ Vous pouvez dans la partie pgsql personnaliser un utilisateur, ajouter par défa
 Etape 5 - Lancer la machine
 ---------------------
 
-Lancez la commande : 
+Lancez la commande :
     - vagrant up
 Ceci a pour effet de télécharger, lancer et configurer la machine virtuelle.
 
 Etape 6 - Programmez !
 ---------------------
 
-Pour accéder à la machine virtuelle, tapez “vagrant ssh”. 
+Pour accéder à la machine virtuelle, tapez “vagrant ssh”.
 
-Votre serveur virtuel est pret et accessible à : 
-http://192.168.56.103/
-PhpMyAdmin à : 
-http://192.168.56.103/phpmyadmin
-Et pgsql à : 
-http://192.168.56.103/adminer
+Votre serveur virtuel est pret et accessible à :
+http://192.168.56.104/
+Et pgsql à :
+http://192.168.56.104/adminer
 
 (Infos de connexion à la fin du readme)
+
+Configuration slave / master
+=============
+
+Lancer les 2 box : pgsql (master) et pgsql_slave (slave)
+---------------------
+
+IP MASTER = 192.168.56.103
+IP SLAVE = 192.168.56.104
+
+CONFIGURER MASTER
+---------------------
+
+     sudo passwd postgres
+(entrer 123)
+     sudo su - postgres
+
+     ssh-keygen
+     ssh-copy-id 192.168.56.104
+
+     vim /etc/postgresql/9.3/main/pg_hba.conf
+
+Ajouter:
+     host    replication     rep     192.168.56.104/32  trust
+
+     vim /etc/postgresql/9.3/main/postgresql.conf
+
+Ajouter:
+     listen_addresses = '*'
+     wal_level = 'hot_standby'
+     archive_mode = on
+     archive_command = 'cd .'
+     max_wal_senders = 1
+     hot_standby = on
+
+     service postgresql restart
+
+CONFIGURER SLAVE
+---------------------
+
+     service postgresql stop
+
+     sudo passwd postgres
+(entrer 123)
+     sudo su - postgres
+
+     ssh-keygen
+     ssh-copy-id 192.168.56.104
+
+     vim /etc/postgresql/9.3/main/pg_hba.conf
+
+Ajouter :
+
+     host    replication     rep     192.168.56.103/32  trust
+
+     vim /etc/postgresql/9.3/main/postgresql.conf
+
+Ajouter :
+     listen_addresses = '*'
+     wal_level = 'hot_standby'
+     archive_mode = on
+     archive_command = 'cd .'
+     max_wal_senders = 1
+     hot_standby = on
+
+INITIALISER LA BASE SUR SLAVE A PARTIR DE MASTER
+---------------------
+
+     psql -c "select pg_start_backup('initial_backup');"
+     rsync -cva --inplace --exclude=*pg_xlog* /var/lib/postgresql/9.3/main/ 192.168.56.104:/var/lib/postgresql/9.3/main/
+     psql -c "select pg_stop_backup();"
+
+CREER LE FICHIER RECOVERY.CONF SUR SLAVE
+---------------------
+
+     vim /var/lib/postgresql/9.3/main/recovery.conf
+
+Ajouter :
+     standby_mode = 'on'
+     primary_conninfo = 'host=192.168.56.103'
+
+toujours sur slave :
+     service postgresql start
+
+Et voilà!
+
 
 Explications
 =============
@@ -87,13 +171,6 @@ Pour modifier l’interface web (l’adresse ip par exemple), éditez le fichier
 Informations
 =============
 
-MySql
----------------------
-
-De base les infos sont les suivants :
-```
-Login : root
-Mdp : 123
 ```
 PgSql
 ---------------------
