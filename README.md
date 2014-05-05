@@ -79,7 +79,9 @@ CONFIGURER MASTER
 ---------------------
 
      sudo passwd postgres
+
 (entrer 123)
+
      sudo su - postgres
 
      ssh-keygen
@@ -88,17 +90,18 @@ CONFIGURER MASTER
      vim /etc/postgresql/9.3/main/pg_hba.conf
 
 Ajouter:
-     host    replication     rep     192.168.56.104/32  trust
+> host    replication     rep     192.168.56.104/32  trust
 
      vim /etc/postgresql/9.3/main/postgresql.conf
 
 Ajouter:
-     listen_addresses = '*'
-     wal_level = 'hot_standby'
-     archive_mode = on
-     archive_command = 'cd .'
-     max_wal_senders = 1
-     hot_standby = on
+
+> listen_addresses = '*'
+> wal_level = 'hot_standby'
+> archive_mode = on
+> archive_command = 'cd .'
+> max_wal_senders = 1
+> hot_standby = on
 
      service postgresql restart
 
@@ -118,17 +121,17 @@ CONFIGURER SLAVE
 
 Ajouter :
 
-     host    replication     rep     192.168.56.103/32  trust
+> host    replication     rep     192.168.56.103/32  trust
 
      vim /etc/postgresql/9.3/main/postgresql.conf
 
 Ajouter :
-     listen_addresses = '*'
-     wal_level = 'hot_standby'
-     archive_mode = on
-     archive_command = 'cd .'
-     max_wal_senders = 1
-     hot_standby = on
+> listen_addresses = '*'
+> wal_level = 'hot_standby'
+> archive_mode = on
+> archive_command = 'cd .'
+> max_wal_senders = 1
+> hot_standby = on
 
 INITIALISER LA BASE SUR SLAVE A PARTIR DE MASTER
 ---------------------
@@ -143,8 +146,8 @@ CREER LE FICHIER RECOVERY.CONF SUR SLAVE
      vim /var/lib/postgresql/9.3/main/recovery.conf
 
 Ajouter :
-     standby_mode = 'on'
-     primary_conninfo = 'host=192.168.56.103'
+> standby_mode = 'on'
+> primary_conninfo = 'host=192.168.56.103'
 
 toujours sur slave :
      service postgresql start
