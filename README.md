@@ -116,21 +116,24 @@ CONFIGURER SLAVE
      service postgresql stop
 
      sudo passwd postgres
+
 (entrer 123)
+
      sudo su - postgres
 
      ssh-keygen
      ssh-copy-id 192.168.56.104
 
-     vim /etc/postgresql/9.3/main/pg_hba.conf
+Ajouter ces lignes dans pg_hba.conf:
 
-Ajouter :
+     vim /etc/postgresql/9.3/main/pg_hba.conf
 
 > host    replication     rep     192.168.56.103/32  trust
 
+Ajouter ces lignes dans postgresql.conf:
+
      vim /etc/postgresql/9.3/main/postgresql.conf
 
-Ajouter :
 > listen_addresses = '*'
 > wal_level = 'hot_standby'
 > archive_mode = on
