@@ -182,7 +182,6 @@ Pour modifier l’interface web (l’adresse ip par exemple), éditez le fichier
 Informations
 =============
 
-```
 PgSql
 ---------------------
 
