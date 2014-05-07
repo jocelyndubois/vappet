@@ -155,7 +155,8 @@ CREER LE FICHIER RECOVERY.CONF SUR SLAVE
 
 Ajouter :
 > standby_mode = 'on'
-> primary_conninfo = 'host=192.168.56.103'
+> primary_conninfo = 'host=192.168.56.103 port=5432 user=rep password=123'
+> trigger_file = '/tmp/postgresql.trigger.5432'
 
 toujours sur slave :
      service postgresql start
