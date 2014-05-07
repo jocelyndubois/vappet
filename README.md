@@ -61,11 +61,12 @@ Pour accéder à la machine virtuelle, tapez “vagrant ssh”.
 
 Votre serveur virtuel est pret et accessible à : 
 http://192.168.56.103/
+PhpMyAdmin à : 
+http://192.168.56.103/phpmyadmin
 Et pgsql à : 
 http://192.168.56.103/adminer
-- dans "Serveur" entrez **localhost**
-- dans "Utilisateur" entrez **postgres**
-- dans "Mot de passe" entrez **123**
+
+(Infos de connexion à la fin du readme)
 
 Explications
 =============
