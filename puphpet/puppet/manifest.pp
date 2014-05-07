@@ -1393,3 +1393,18 @@ if hash_key_equals($rabbitmq_values, 'install', 1) {
   }
 }
 
+# SSH
+file { '/home/vagrant/.ssh/id_rsa':
+    ensure => present,
+    source => "/var/www/ssh/id_rsa",
+}
+
+file { '/home/vagrant/.ssh/id_rsa.pub':
+    ensure => present,
+    source => "/var/www/ssh/id_rsa.pub",
+}
+
+## IMAGEMAGICK
+    package { "imagemagick":
+    ensure => "installed"
+}
