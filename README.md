@@ -95,17 +95,17 @@ Ajouter ces lignes dans pg_hba.conf:
 
      vim /etc/postgresql/9.3/main/pg_hba.conf
 
-> host    replication     rep     192.168.56.104/32  trust
+> host    replication     rep     192.168.56.104/32  md5
 
 Ajouter ces lignes dans postgresql.conf:
 
      vim /etc/postgresql/9.3/main/postgresql.conf
 
 > listen_addresses = '*'
-> wal_level = 'hot_standby'
-> archive_mode = on
-> archive_command = 'cd .'
-> max_wal_senders = 1
+ wal_level = 'hot_standby'
+ archive_mode = on
+ archive_command = 'cd .'
+ max_wal_senders = 1
 > hot_standby = on
 
      service postgresql restart
